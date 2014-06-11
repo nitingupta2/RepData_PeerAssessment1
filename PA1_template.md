@@ -16,15 +16,15 @@ dfActivity$time <- format(dfActivity$datetime, format="%H:%M")
 
 
 ## What is mean total number of steps taken per day?
-Load the plyr package and summarise total number of steps by date.  
+Load the plyr package and aggregate total number of steps by date.  
 Make a histogram of total steps per day and output their mean and median.
 
 ```r
 library(plyr)
 dfActivity.d <- ddply(dfActivity, c("date"), summarise, totalStepsPerDay=sum(steps)) 
 with(dfActivity.d, 
-     {hist(totalStepsPerDay, col="red", breaks=10, 
-           xlab="Total Steps", main="Histogram of Total Steps Per Day")})
+     {hist(totalStepsPerDay, col="red", breaks=20, xlim=c(0,25000), 
+           xlab="Total Steps per day", main="Histogram of Total Steps Per Day")})
 ```
 
 ![plot of chunk plotTotalStepsPerDay](figure/plotTotalStepsPerDay.png) 
@@ -47,11 +47,12 @@ median(dfActivity.d$totalStepsPerDay, na.rm=T)
 
 
 ## What is the average daily activity pattern?
-Determine average number of steps by each 5 minute interval and make a plot.
+Aggregate average number of steps by each 5 minute interval and make a plot.
 
 ```r
-library(ggplot2)
+library(plyr)
 dfActivity.i <- ddply(dfActivity, c("interval"), summarise, avgStepsInInterval=mean(steps, na.rm=T))
+library(ggplot2)
 ggplot(dfActivity.i, aes(x=interval, y=avgStepsInInterval)) + 
         geom_line(colour="red") + 
         theme(panel.background=element_rect(color="black")) +
@@ -83,8 +84,8 @@ sum(is.na(dfActivity$steps))
 ## [1] 2304
 ```
 Construct a new data frame by filling missing steps values using the average number of steps in that interval.  
-Create a new column avgStepsInInterval with mean steps values by interval.  
-Fill NA steps values from avgStepsInInterval using a logical vector of NA steps values.
+Create a new column avgStepsInInterval aggregated with mean steps values by interval.  
+One way to fill NA steps values is to use avgStepsInInterval subsetted by a logical vector of NA steps values.
 
 ```r
 dfActivityNew <- dfActivity
@@ -93,14 +94,14 @@ dfActivityNew$avgStepsInInterval = ave(dfActivityNew$steps, dfActivityNew$interv
 vMissingSteps <- is.na(dfActivityNew$steps)
 dfActivityNew$steps[vMissingSteps] = dfActivityNew$avgStepsInInterval[vMissingSteps]
 ```
-Make a histogram of total steps per day.  
+Aggregate total steps per day and make a histogram.  
 Compare their mean and median to that of original dataset.
 
 ```r
 library(plyr)
 dfActivityNew.d <- ddply(dfActivityNew, c("date"), summarise, totalStepsPerDay=sum(steps)) 
 with(dfActivityNew.d, 
-     {hist(totalStepsPerDay, col="red", breaks=10, xlab="Total Steps",
+     {hist(totalStepsPerDay, col="red", breaks=20, xlim=c(0,25000), xlab="Total Steps per day",
            main="Histogram of Total Steps Per Day (after imputing missing values)")})
 ```
 
@@ -121,7 +122,9 @@ median(dfActivityNew.d$totalStepsPerDay)
 ```
 ## [1] 10766
 ```
-After imputing missing steps values from average steps per interval, the mean and median of total steps per day are relatively unchanged from before.
+After imputing missing steps values from average steps per interval:
+* The frequency of the interval 10000-11000 steps increases.
+* The mean and median of total steps per day have the same value 10766. Prior to filling missing data, the median was 10765 and the mean was 10766 steps.  
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -135,13 +138,13 @@ dfActivityNew <- transform(dfActivityNew, time=as.factor(time), wdfactor=as.fact
 Create a panel plot of average steps taken by each 5 minute interval, averaged across all weekdays and weekends.
 
 ```r
-library(ggplot2)
+library(plyr)
 dfActivityNew.i <- ddply(dfActivityNew, c("wdfactor", "interval"), 
                          summarise, avgStepsInInterval=mean(steps))
+library(ggplot2)
 ggplot(dfActivityNew.i, aes(x=interval, y=avgStepsInInterval)) + 
         geom_line(colour="red") + 
         facet_grid(wdfactor ~ .) + 
-        scale_x_continuous(breaks=c(0:2500)) +
         theme(panel.background=element_rect(color="black")) + 
         xlab("Interval") + 
         ylab("Average Steps in Interval") + 
