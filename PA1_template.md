@@ -22,7 +22,9 @@ Make a histogram of total steps per day and output their mean and median.
 ```r
 library(plyr)
 dfActivity.d <- ddply(dfActivity, c("date"), summarise, totalStepsPerDay=sum(steps)) 
-with(dfActivity.d, {hist(totalStepsPerDay, col="red", main="Histogram of Total Steps Per Day")})
+with(dfActivity.d, 
+     {hist(totalStepsPerDay, col="red", breaks=10, 
+           xlab="Total Steps", main="Histogram of Total Steps Per Day")})
 ```
 
 ![plot of chunk plotTotalStepsPerDay](figure/plotTotalStepsPerDay.png) 
@@ -48,8 +50,13 @@ median(dfActivity.d$totalStepsPerDay, na.rm=T)
 Determine average number of steps by each 5 minute interval and make a plot.
 
 ```r
+library(ggplot2)
 dfActivity.i <- ddply(dfActivity, c("interval"), summarise, avgStepsInInterval=mean(steps, na.rm=T))
-with(dfActivity.i, {plot(interval, avgStepsInInterval, type="l", col="red")})
+ggplot(dfActivity.i, aes(x=interval, y=avgStepsInInterval)) + 
+        geom_line(colour="red") + 
+        theme(panel.background=element_rect(color="black")) +
+        xlab("Interval") + ylab("Average Steps") +
+        ggtitle("Average Steps in Interval")
 ```
 
 ![plot of chunk plotAvgStepsInInterval](figure/plotAvgStepsInInterval.png) 
@@ -92,7 +99,9 @@ Compare their mean and median to that of original dataset.
 ```r
 library(plyr)
 dfActivityNew.d <- ddply(dfActivityNew, c("date"), summarise, totalStepsPerDay=sum(steps)) 
-with(dfActivityNew.d, {hist(totalStepsPerDay, col="red", main="Histogram of Total Steps Per Day (after imputing missing values)")})
+with(dfActivityNew.d, 
+     {hist(totalStepsPerDay, col="red", breaks=10, xlab="Total Steps",
+           main="Histogram of Total Steps Per Day (after imputing missing values)")})
 ```
 
 ![plot of chunk plotTotalStepsPerDayNew](figure/plotTotalStepsPerDayNew.png) 
@@ -121,7 +130,7 @@ Using the dataset with imputed missing values, first create a factor variable wi
 ```r
 dfActivityNew$wdfactor <- ifelse(weekdays(dfActivityNew$datetime) %in% c("Saturday","Sunday"),
                                  "weekend", "weekday")
-dfActivityNew <- transform(dfActivityNew, wdfactor=as.factor(wdfactor))
+dfActivityNew <- transform(dfActivityNew, time=as.factor(time), wdfactor=as.factor(wdfactor))
 ```
 Create a panel plot of average steps taken by each 5 minute interval, averaged across all weekdays and weekends.
 
@@ -129,13 +138,14 @@ Create a panel plot of average steps taken by each 5 minute interval, averaged a
 library(ggplot2)
 dfActivityNew.i <- ddply(dfActivityNew, c("wdfactor", "interval"), 
                          summarise, avgStepsInInterval=mean(steps))
-plotpanel = ggplot(dfActivityNew.i, aes(x=interval, y=avgStepsInInterval)) + 
-            geom_line(colour="red") + 
-            facet_grid(wdfactor ~ .) +
-            theme(panel.background=element_rect(color="black")) +
-            xlab("Interval") + ylab("Average Steps in Interval") +
-            ggtitle("Average Steps in Interval by weekday & weekend")
-print(plotpanel)
+ggplot(dfActivityNew.i, aes(x=interval, y=avgStepsInInterval)) + 
+        geom_line(colour="red") + 
+        facet_grid(wdfactor ~ .) + 
+        scale_x_continuous(breaks=c(0:2500)) +
+        theme(panel.background=element_rect(color="black")) + 
+        xlab("Interval") + 
+        ylab("Average Steps in Interval") + 
+        ggtitle("Average Steps in Interval by weekday & weekend")
 ```
 
 ![plot of chunk plotPanelAvgStepsInInterval](figure/plotPanelAvgStepsInInterval.png) 

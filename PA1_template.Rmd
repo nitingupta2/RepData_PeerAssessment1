@@ -20,7 +20,9 @@ Make a histogram of total steps per day and output their mean and median.
 ```{r plotTotalStepsPerDay, echo=TRUE}
 library(plyr)
 dfActivity.d <- ddply(dfActivity, c("date"), summarise, totalStepsPerDay=sum(steps)) 
-with(dfActivity.d, {hist(totalStepsPerDay, col="red", main="Histogram of Total Steps Per Day")})
+with(dfActivity.d, 
+     {hist(totalStepsPerDay, col="red", breaks=10, 
+           xlab="Total Steps", main="Histogram of Total Steps Per Day")})
 
 mean(dfActivity.d$totalStepsPerDay, na.rm=T)
 median(dfActivity.d$totalStepsPerDay, na.rm=T)
@@ -30,8 +32,13 @@ median(dfActivity.d$totalStepsPerDay, na.rm=T)
 ## What is the average daily activity pattern?
 Determine average number of steps by each 5 minute interval and make a plot.
 ```{r plotAvgStepsInInterval, echo=TRUE}
+library(ggplot2)
 dfActivity.i <- ddply(dfActivity, c("interval"), summarise, avgStepsInInterval=mean(steps, na.rm=T))
-with(dfActivity.i, {plot(interval, avgStepsInInterval, type="l", col="red")})
+ggplot(dfActivity.i, aes(x=interval, y=avgStepsInInterval)) + 
+        geom_line(colour="red") + 
+        theme(panel.background=element_rect(color="black")) +
+        xlab("Interval") + ylab("Average Steps") +
+        ggtitle("Average Steps in Interval")
 ```
 
 Output the interval that has the maximum number of steps on average.
@@ -60,7 +67,9 @@ Compare their mean and median to that of original dataset.
 ```{r plotTotalStepsPerDayNew, echo=TRUE}
 library(plyr)
 dfActivityNew.d <- ddply(dfActivityNew, c("date"), summarise, totalStepsPerDay=sum(steps)) 
-with(dfActivityNew.d, {hist(totalStepsPerDay, col="red", main="Histogram of Total Steps Per Day (after imputing missing values)")})
+with(dfActivityNew.d, 
+     {hist(totalStepsPerDay, col="red", breaks=10, xlab="Total Steps",
+           main="Histogram of Total Steps Per Day (after imputing missing values)")})
 
 mean(dfActivityNew.d$totalStepsPerDay)
 median(dfActivityNew.d$totalStepsPerDay)
@@ -73,18 +82,18 @@ Using the dataset with imputed missing values, first create a factor variable wi
 ```{r createFactor, echo=TRUE}
 dfActivityNew$wdfactor <- ifelse(weekdays(dfActivityNew$datetime) %in% c("Saturday","Sunday"),
                                  "weekend", "weekday")
-dfActivityNew <- transform(dfActivityNew, wdfactor=as.factor(wdfactor))
+dfActivityNew <- transform(dfActivityNew, time=as.factor(time), wdfactor=as.factor(wdfactor))
 ```
 Create a panel plot of average steps taken by each 5 minute interval, averaged across all weekdays and weekends.
 ```{r plotPanelAvgStepsInInterval, echo=TRUE}
 library(ggplot2)
 dfActivityNew.i <- ddply(dfActivityNew, c("wdfactor", "interval"), 
                          summarise, avgStepsInInterval=mean(steps))
-plotpanel = ggplot(dfActivityNew.i, aes(x=interval, y=avgStepsInInterval)) + 
-            geom_line(colour="red") + 
-            facet_grid(wdfactor ~ .) +
-            theme(panel.background=element_rect(color="black")) +
-            xlab("Interval") + ylab("Average Steps in Interval") +
-            ggtitle("Average Steps in Interval by weekday & weekend")
-print(plotpanel)
+ggplot(dfActivityNew.i, aes(x=interval, y=avgStepsInInterval)) + 
+        geom_line(colour="red") + 
+        facet_grid(wdfactor ~ .) + 
+        theme(panel.background=element_rect(color="black")) + 
+        xlab("Interval") + 
+        ylab("Average Steps in Interval") + 
+        ggtitle("Average Steps in Interval by weekday & weekend")
 ```
