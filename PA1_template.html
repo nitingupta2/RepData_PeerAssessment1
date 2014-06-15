@@ -186,7 +186,7 @@ hljs.initHighlightingOnLoad();
 <h2>Loading and preprocessing the data</h2>
 
 <p>Create a dataframe from activity data having 3 columns.<br/>
-Create a column &#39;datetime&#39; by appending 5 minute intervals in HHMM form with correspoding dates.</p>
+Create a column &#39;datetime&#39; by appending 5 minute intervals in HHMM form with corresponding dates.</p>
 
 <pre><code class="r">dfActivity &lt;- read.csv(&quot;activity.csv&quot;)
 dfActivity$datetime &lt;- strptime(paste(dfActivity$date, 
@@ -255,9 +255,11 @@ ggplot(dfActivity.i, aes(x=interval, y=avgStepsInInterval)) +
 <pre><code>## [1] 2304
 </code></pre>
 
+<h3>Strategy for filling NA steps values:</h3>
+
 <p>Construct a new data frame by filling missing steps values using the average number of steps in that interval.<br/>
 Create a new column avgStepsInInterval aggregated with mean steps values by interval.<br/>
-One way to fill NA steps values is to use avgStepsInInterval subsetted by a logical vector of NA steps values.</p>
+Fill NA steps values by avgStepsInInterval subsetted by a logical vector of NA steps values.</p>
 
 <pre><code class="r">dfActivityNew &lt;- dfActivity
 dfActivityNew$avgStepsInInterval = ave(dfActivityNew$steps, dfActivityNew$interval, 

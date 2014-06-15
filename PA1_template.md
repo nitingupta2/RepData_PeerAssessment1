@@ -4,7 +4,7 @@ Author: Nitin Gupta
   
 ## Loading and preprocessing the data
 Create a dataframe from activity data having 3 columns.  
-Create a column 'datetime' by appending 5 minute intervals in HHMM form with correspoding dates.
+Create a column 'datetime' by appending 5 minute intervals in HHMM form with corresponding dates.
 
 ```r
 dfActivity <- read.csv("activity.csv")
@@ -83,9 +83,10 @@ sum(is.na(dfActivity$steps))
 ```
 ## [1] 2304
 ```
+### Strategy for filling NA steps values:
 Construct a new data frame by filling missing steps values using the average number of steps in that interval.  
 Create a new column avgStepsInInterval aggregated with mean steps values by interval.  
-One way to fill NA steps values is to use avgStepsInInterval subsetted by a logical vector of NA steps values.
+Fill NA steps values by avgStepsInInterval subsetted by a logical vector of NA steps values.
 
 ```r
 dfActivityNew <- dfActivity
